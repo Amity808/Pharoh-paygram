@@ -1,0 +1,29 @@
+import React from 'react'
+import { ConnectButton } from "@/components/ConnectButton";
+import Link from 'next/link';
+type Props = {}
+
+const Navbar = (props: Props) => {
+    return (
+       <div className=' flex justify-between flex-row p-[20px]'>
+        <div>
+            <h1 className=' font-bold text-3xl'>PayGram</h1>
+        </div>
+        <div>
+            <ul className=' flex flex-row gap-5 cursor-pointer'>
+                <li>
+                    <Link href="/payment">Payment</Link>
+                </li>
+                <li>
+                    Register
+                </li>
+            </ul>
+        </div>
+        <div>
+            <ConnectButton />
+        </div>
+        </div>
+    )
+}
+
+export default Navbar
