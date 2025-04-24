@@ -12,10 +12,10 @@ const Navbar = (props: Props) => {
         <div>
             <ul className=' flex flex-row gap-5 cursor-pointer'>
                 <li>
-                    <Link href="/payment">Payment</Link>
+                    <Link href="/dashboard">Dashboard</Link>
                 </li>
                 <li>
-                    Register
+                <Link href="/register">Register</Link>
                 </li>
             </ul>
         </div>

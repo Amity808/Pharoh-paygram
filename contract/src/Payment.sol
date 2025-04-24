@@ -51,22 +51,25 @@ contract Paygramchain is AccessControl, Ownable {
         address token;
         address company;
         uint256 balance;
+        uint256 paymentInterval;
     }
 
     mapping(uint256 => Employee) public _employee;
     mapping(address => CompanyConfig) public _company;
     mapping(address => bool) _supportedToken;
     uint256 public FEE = 5;
-    bytes32 private constant ADMIN_PAY_ROLE = keccak256("ADMIN_PAY_ROLE");
+    bytes32 public constant ADMIN_PAY_ROLE = keccak256("ADMIN_PAY_ROLE");
 
     constructor() Ownable(msg.sender) {
         _grantRole(ADMIN_PAY_ROLE, msg.sender);
+        _setRoleAdmin(ADMIN_PAY_ROLE, DEFAULT_ADMIN_ROLE);
+        _setRoleAdmin(ADMIN_PAY_ROLE, DEFAULT_ADMIN_ROLE);
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
-
 
     function registerCompany(
         address token,
-        uint256 _amount
+        uint256 _amount,  uint256 _paymentInterval
     ) external onlyRole(ADMIN_PAY_ROLE) {
         if (_company[msg.sender].company != address(0))
             revert PayGramChain_Company_Already_Registered();
@@ -79,16 +82,11 @@ contract Paygramchain is AccessControl, Ownable {
             "Transfer failed"
         );
 
-        require(
-            IERC20(token).transfer(owner(), fee),
-            "Fee transfer failed"
-        );
+        require(IERC20(token).transfer(owner(), fee), "Fee transfer failed");
 
-        _company[msg.sender] = CompanyConfig(token, msg.sender, amountAfterFee);
+        _company[msg.sender] = CompanyConfig(token, msg.sender, amountAfterFee,  _paymentInterval);
         emit CompanyRegistered(msg.sender, token, amountAfterFee);
     }
-
-
 
     function grantADMIN_PAY_ROLE(address _account) external onlyOwner {
         _grantRole(ADMIN_PAY_ROLE, _account);
@@ -110,19 +108,22 @@ contract Paygramchain is AccessControl, Ownable {
             token,
             _salary,
             0,
-            block.timestamp, false
+            block.timestamp,
+            false
         );
         employeeLength++;
         emit EmployeeAdded(msg.sender, _employeeAddress, _salary, token);
     }
 
-    function distributeSalary(uint256 _employeeId) public {
+     function distributeSalary(uint256 _employeeId) public onlyRole(ADMIN_PAY_ROLE) {
         Employee storage employee = _employee[_employeeId];
-        // if (employee.isPaid == true)
+        CompanyConfig storage company = _company[employee.company];
         if (employee.company == address(0))
             revert PayGramChain_Employee_Not_Found();
-        if (block.timestamp < employee.lastPayment)
+        if (block.timestamp < employee.lastPayment + company.paymentInterval * 1 days)
             revert PayGramChain_Payment_Not_Due();
+        if (company.balance < employee.salary)
+            revert PayGramChain_Transfer_Failed();
         if (
             !IERC20(employee.token).transferFrom(
                 employee.company,
@@ -130,6 +131,7 @@ contract Paygramchain is AccessControl, Ownable {
                 employee.salary
             )
         ) revert PayGramChain_Transfer_Failed();
+        company.balance -= employee.salary; 
         employee.lastPayment = block.timestamp;
         employee.totalPaid += employee.salary;
         employee.isPaid = true;
