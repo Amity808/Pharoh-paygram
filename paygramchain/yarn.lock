@@ -1132,6 +1132,13 @@
   dependencies:
     undici-types "~6.19.2"
 
+"@types/react-blockies@^1.4.4":
+  version "1.4.4"
+  resolved "https://registry.npmjs.org/@types/react-blockies/-/react-blockies-1.4.4.tgz"
+  integrity sha512-7QfFeT1y/izwP/Wxmnl9Ii73udFQIBsfI/IvG+841sPxqc7Pf79ZDZP3XQsmYzAjDXdoZXquLgI/Q/tmAZwB0w==
+  dependencies:
+    "@types/react" "*"
+
 "@types/react-dom@*", "@types/react-dom@^19":
   version "19.1.2"
   resolved "https://registry.npmjs.org/@types/react-dom/-/react-dom-19.1.2.tgz"

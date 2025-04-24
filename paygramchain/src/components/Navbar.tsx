@@ -17,6 +17,9 @@ const Navbar = (props: Props) => {
                 <li>
                 <Link href="/register">Register</Link>
                 </li>
+                <li>
+                <Link href="/employee">Add Employee</Link>
+                </li>
             </ul>
         </div>
         <div>
