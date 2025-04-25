@@ -13,6 +13,7 @@ import { toast } from 'react-toastify'
 const Addemployee = () => {
     const [employee, setEmployee] = useState('')
     const [salary, setSalary] = useState(0)
+    const [isLoading, setIsLoading] = useState(false)
 
     const { address } = useAccount()
 
@@ -33,6 +34,7 @@ const Addemployee = () => {
     console.log(simulateRegEmployeeError, "simulateRegEmployeeError")
 
     const handleRegEmployee = async (e: any) => {
+        setIsLoading(false)
         e.preventDefault();
 
         try {
@@ -46,6 +48,9 @@ const Addemployee = () => {
         } catch (error) {
             console.log(error)
             toast.error("Unexpected Error")
+            setIsLoading(false)
+        } finally {
+            setIsLoading(false);
         }
 
     }

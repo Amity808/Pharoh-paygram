@@ -35,7 +35,7 @@ contract Paygramchain is AccessControl, Ownable {
     event TokenAdded(address indexed token);
 
     // using IERC20 for IERC20;
-    uint256 employeeLength;
+    uint256 public employeeLength;
 
     struct Employee {
         address company;

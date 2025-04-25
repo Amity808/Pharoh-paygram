@@ -4,7 +4,6 @@ import { useWriteContract, useSimulateContract, useReadContract } from 'wagmi'
 import { contractAddress, tokenAddress } from '@/helper/constant'
 import PAYMENTABI from "@/contract/abi.json"
 import ERC20Abi from "@/contract/erc20.json"
-import useRegCompany from '@/hooks/useRegister'
 import { toast } from 'react-toastify'
 
 import { Button } from './ui/button'
@@ -16,11 +15,11 @@ const Register = (props: Props) => {
   const [amount, setAmount] = useState(0)
   const [token, setToken] = useState('')
   const [payInterval, setPayInterval] = useState(0)
+  const [isLoading, setIsLoading] = useState(false)
 
   const { writeContractAsync } = useWriteContract()
   // 0xe238b320A22af4c4EAf607cf30843e6eB7de567C
 
-  const { handleRegCompany, isLoading } = useRegCompany({ amount, payInterval })
 
   const amountformat = parseEther(amount.toString())
 
@@ -56,6 +55,7 @@ const Register = (props: Props) => {
 
 
   const hanldeReg = async (e: any) => {
+    setIsLoading(false);
     e.preventDefault()
     try {
       // if (!simulateRegisteration) {
@@ -74,7 +74,12 @@ const Register = (props: Props) => {
       console.log(response);
       } else {
       await writeContractAsync(simulateApproveToken!.request);
-      const response = await writeContractAsync(simulateRegisteration!.request)
+      const response = await writeContractAsync({
+        abi: PAYMENTABI,
+        address: contractAddress,
+        functionName: "registerCompany",
+        args: [tokenAddress, amountformat, payInterval]
+      })
       console.log(response)
       // todo: view on pharos scan
       toast.success("Company created successsfully")
@@ -101,6 +106,9 @@ const Register = (props: Props) => {
     } catch (error) {
       console.log("Error in handleReg:", error)
       toast.error("Get a company role from the protocol or already a registered company")
+      setIsLoading(false);
+    } finally {
+      setIsLoading(false);
     }
   }
   console.log(simulateRegError);

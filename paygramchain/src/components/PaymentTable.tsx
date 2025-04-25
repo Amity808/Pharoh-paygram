@@ -3,8 +3,7 @@ import React, { useState, useCallback, useEffect } from 'react'
 import { useAccount, useWriteContract, useReadContract } from 'wagmi'
 import { truuncateAddress } from '@/lib/utils'
 import PAYMENTABI from "@/contract/abi.json"
-import ERC20Abi from "@/contract/erc20.json"
-import { contractAddress, tokenAddress } from '@/helper/constant'
+import { contractAddress } from '@/helper/constant'
 import { IdenticonAddress } from './Blockies'
 import { formatEther } from 'viem'
 import { toast } from 'react-toastify'
@@ -18,9 +17,14 @@ interface EmployeeInterface {
     isPaid: boolean;
 }
 
-const PaymentTable = () => {
+interface PaymentTableProps {
+    id: string;
+}
+
+const PaymentTable = ({ id }: PaymentTableProps) => {
 
     const [Employee, setEmployee] = useState<EmployeeInterface | null>(null)
+    const [isLoading, setIsLoading] = useState(false)
     const { address } = useAccount()
     const { writeContractAsync } = useWriteContract()
 
@@ -28,7 +32,7 @@ const PaymentTable = () => {
         abi: PAYMENTABI,
         address: contractAddress,
         functionName: "_employee",
-        args: [0]
+        args: [id]
     })
 
 
@@ -56,22 +60,26 @@ const PaymentTable = () => {
     }, [formatedData])
 
     const paySalary = async () => {
+        setIsLoading(true)
         try {
             const res = await writeContractAsync({
                 abi: PAYMENTABI,
                 address: contractAddress,
                 functionName: "distributeSalary",
-                args: [0]
+                args: [id]
             })
-            toast.success("Successfully paided")
+            if(res) {
+                toast.success("Successfully paided");
+            }
         } catch (error) {
             console.log(error)
+            setIsLoading(false)
+        }finally {
+            setIsLoading(false)
         }
     }
 
-    if (!Employee) return null
-
-    console.log(Employee, "Employee")
+    if (!Employee) return null;
 
 
     return (
@@ -82,7 +90,7 @@ const PaymentTable = () => {
                     <thead>
                         <tr>
                             <th>
-                                Address
+                                Company Address
                             </th>
                             <th>Token</th>
                             <th>Total Paid</th>
@@ -100,7 +108,7 @@ const PaymentTable = () => {
                                 <div className="flex items-center gap-3">
                                     <div className="avatar">
                                         <div className="mask mask-squircle h-12 w-12">
-                                            <IdenticonAddress address={Employee?.employeeAddress} size={150} />
+                                            <IdenticonAddress address={Employee?.employeeAddress} size={50} />
                                         </div>
                                     </div>
                                     <div>
@@ -113,9 +121,9 @@ const PaymentTable = () => {
                                 Total Paid {Employee?.totalPaid ? formatEther(BigInt(Employee.totalPaid), "wei") : '0'}                                <br />
                                 <span className="badge badge-ghost badge-sm px-4">Salary {Employee?.salary ? formatEther(BigInt(Employee.salary), "wei") : '0'} MTK</span>
                             </td>
-                            <td>{Employee?.isPaid}</td>
+                            <td>{Employee?.isPaid ? "Paid" : "not paid"}</td>
                             <th>
-                                <button className="btn btn-ghost btn-xs" onClick={paySalary}>Pay</button>
+                                <button className="btn btn-ghost btn-xs" onClick={paySalary} disabled={isLoading}>{ isLoading ? "Paying" : "Pay"}</button>
                             </th>
                         </tr>
                     </tbody>
