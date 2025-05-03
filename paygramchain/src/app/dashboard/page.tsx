@@ -3,9 +3,8 @@ import Payment from '@/components/Payment'
 import Navbar from '@/components/Navbar'
 
 
-type Props = {}
 
-const Dashboard = (props: Props) => {
+const Dashboard = () => {
   return (
     <div>
       <div>

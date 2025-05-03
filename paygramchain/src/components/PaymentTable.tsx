@@ -9,6 +9,7 @@ import { formatEther } from 'viem'
 import { toast } from 'react-toastify'
 interface EmployeeInterface {
     company: `0x${string}`;
+    metadata: string;
     employeeAddress: `0x${string}`;
     token: `0x${string}`;
     salary: number;
@@ -25,6 +26,7 @@ const PaymentTable = ({ id }: PaymentTableProps) => {
 
     const [Employee, setEmployee] = useState<EmployeeInterface | null>(null)
     const [isLoading, setIsLoading] = useState(false)
+    // const [dataFetched, setDataFetched] = useState()
     const { address } = useAccount()
     const { writeContractAsync } = useWriteContract()
 
@@ -46,12 +48,13 @@ const PaymentTable = ({ id }: PaymentTableProps) => {
         }
         setEmployee({
             company: employDetails[0],
-            employeeAddress: employDetails[1],
-            token: employDetails[2],
-            salary: employDetails[3],
-            totalPaid: employDetails[4],
-            lastpayment: employDetails[5],
-            isPaid: employDetails[6]
+            metadata: employDetails[1],
+            employeeAddress: employDetails[2],
+            token: employDetails[3],
+            salary: employDetails[4],
+            totalPaid: employDetails[5],
+            lastpayment: employDetails[6],
+            isPaid: employDetails[7]
         })
     }, [employDetails])
 
@@ -78,8 +81,16 @@ const PaymentTable = ({ id }: PaymentTableProps) => {
             setIsLoading(false)
         }
     }
+    // const fetchImage = async () => {
+    //     try {
+            
+    //     } catch (error) {
+            
+    //     }
+    // }
 
     if (!Employee) return null;
+    
 
 
     return (

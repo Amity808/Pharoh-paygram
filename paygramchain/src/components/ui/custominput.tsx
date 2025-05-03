@@ -1,8 +1,8 @@
 import React from 'react'
 
-type Props = {}
 
-const Custominput = (props: Props) => {
+
+const Custominput = () => {
   return (
     <>
         <input type="text" placeholder="Type here" className="input" />

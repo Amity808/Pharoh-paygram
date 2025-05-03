@@ -1,15 +1,15 @@
 'use client'
 import React, { useState, useCallback, useEffect } from 'react'
-import { useReadContract, useAccount } from 'wagmi'
+import { useReadContract } from 'wagmi'
 import PaymentTable from './PaymentTable'
-import { contractAddress, tokenAddress } from '@/helper/constant'
+import { contractAddress } from '@/helper/constant'
 import PAYMENTABI from "@/contract/abi.json"
-type Props = {}
 
-const Payment = (props: Props) => {
+
+const Payment = () => {
 
   const [employeeId, setEmployeeId] = useState<Map<string, string>>(new Map());
-  const { address } = useAccount();
+
 
   const { data: employeeLength } = useReadContract({
     abi: PAYMENTABI,
@@ -18,6 +18,7 @@ const Payment = (props: Props) => {
     args: []
   })
 
+  console.log(employeeLength, "empy")
  
 
 
@@ -32,7 +33,6 @@ const Payment = (props: Props) => {
       const newMap = new Map<string, string>();
       // Check if employeeLength is a bigint and greater than 0
       if (typeof employeeLength === 'bigint' && employeeLength > 0) {
-        // Assuming employee IDs start from 0 and go up to employeeLength - 1
         for (let i = 0; i < employeeLength; i++) { // Use bigint for loop counter
           newMap.set(i.toString(), i.toString()); // Store employee IDs as strings
         }

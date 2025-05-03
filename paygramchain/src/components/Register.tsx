@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from 'react'
-import { useWriteContract, useSimulateContract, useReadContract } from 'wagmi'
+import { useWriteContract, useReadContract } from 'wagmi'
 import { contractAddress, tokenAddress } from '@/helper/constant'
 import PAYMENTABI from "@/contract/abi.json"
 import ERC20Abi from "@/contract/erc20.json"
@@ -8,9 +8,9 @@ import { toast } from 'react-toastify'
 
 import { Button } from './ui/button'
 import { parseEther } from 'viem'
-type Props = {}
 
-const Register = (props: Props) => {
+
+const Register = () => {
 
   const [amount, setAmount] = useState(0)
   const [token, setToken] = useState('')
@@ -23,12 +23,7 @@ const Register = (props: Props) => {
 
   const amountformat = parseEther(amount.toString())
 
-  const { data: simulateRegisteration, error: simulateRegError } = useSimulateContract({
-    abi: PAYMENTABI,
-    address: contractAddress,
-    functionName: "registerCompany",
-    args: [tokenAddress, amountformat, payInterval]
-  })
+  
 
   const ownerAdd = process.env.NEXT_PUBLIC_OWNER
 
@@ -41,19 +36,9 @@ const Register = (props: Props) => {
 
   console.log(allowanceState)
 
-  const { data: simulateApproveToken, error: simulateApproveError } = useSimulateContract({
-    abi: ERC20Abi,
-    address: tokenAddress,
-    functionName: "approve",
-    args: [contractAddress, amountformat]
-  })
 
 
-
-  console.log(simulateRegError)
-  console.log("Simulation Data:", simulateRegisteration);
-
-
+    /* eslint-disable @typescript-eslint/no-explicit-any */
   const hanldeReg = async (e: any) => {
     setIsLoading(false);
     e.preventDefault()
@@ -70,10 +55,20 @@ const Register = (props: Props) => {
 
       if (Number(allowanceState) > Number(amountformat)) {
       
-      const response = await writeContractAsync(simulateRegisteration!.request)
+      const response = await writeContractAsync({
+        abi: PAYMENTABI,
+        address: contractAddress,
+        functionName: "registerCompany",
+        args: [tokenAddress, amountformat, payInterval]
+      })
       console.log(response);
       } else {
-      await writeContractAsync(simulateApproveToken!.request);
+      await writeContractAsync({
+        abi: ERC20Abi,
+    address: tokenAddress,
+    functionName: "approve",
+    args: [contractAddress, amountformat]
+      });
       const response = await writeContractAsync({
         abi: PAYMENTABI,
         address: contractAddress,
@@ -103,6 +98,7 @@ const Register = (props: Props) => {
       //       args: [tokenAddress as `0x${string}`, BigInt(amount), payInterval]
       //     })
 
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     } catch (error) {
       console.log("Error in handleReg:", error)
       toast.error("Get a company role from the protocol or already a registered company")
@@ -111,7 +107,6 @@ const Register = (props: Props) => {
       setIsLoading(false);
     }
   }
-  console.log(simulateRegError);
 
 
   return (
@@ -143,7 +138,7 @@ const Register = (props: Props) => {
             <span>Pay Interval</span>
           </label>
         </div>
-        <Button className=' bg-black' type='submit'>Register</Button>
+        <Button className=' bg-black' disabled={isLoading} type='submit'>Register</Button>
       </form>
     </div>
   )

@@ -33,12 +33,28 @@ contract Paygramchain is AccessControl, Ownable {
         address token
     );
     event TokenAdded(address indexed token);
+    event RemittanceInitiated(
+    bytes32 indexed remittanceId,
+    address indexed sender,
+    address indexed receiver,
+    address token,
+    uint256 amount,
+    uint256 timestamp
+);
+
+event RemittanceCompleted(
+    bytes32 indexed remittanceId,
+    address indexed receiver,
+    uint256 amount,
+    uint256 timestamp
+);
 
     // using IERC20 for IERC20;
     uint256 public employeeLength;
 
     struct Employee {
         address company;
+        string employeeURL;
         address employeeAddress;
         address token;
         uint256 salary;
@@ -54,8 +70,25 @@ contract Paygramchain is AccessControl, Ownable {
         uint256 paymentInterval;
     }
 
+    // country, from, reciever mail
+    struct Remittance {
+    address sender;
+    string detailsURL;
+    address receiver;
+    address token;
+    uint256 amount;
+    uint256 timestamp;
+    bool isCompleted;
+}
+
+mapping(bytes32 => Remittance) public _remittances;
+uint256 public remittanceLength;
+
+
     mapping(uint256 => Employee) public _employee;
     mapping(address => CompanyConfig) public _company;
+    mapping(address => bytes32[]) private remitanceIDs;
+
     mapping(address => bool) _supportedToken;
     uint256 public FEE = 5;
     bytes32 public constant ADMIN_PAY_ROLE = keccak256("ADMIN_PAY_ROLE");
@@ -94,6 +127,7 @@ contract Paygramchain is AccessControl, Ownable {
 
     function addEmployee(
         address _companyAddress,
+        string memory _employeeURL,
         address _employeeAddress,
         uint256 _salary,
         address token
@@ -104,6 +138,7 @@ contract Paygramchain is AccessControl, Ownable {
         }
         _employee[employeeLength] = Employee(
             company.company,
+            _employeeURL,
             _employeeAddress,
             token,
             _salary,
@@ -148,4 +183,48 @@ contract Paygramchain is AccessControl, Ownable {
         _supportedToken[_token] = true;
         emit TokenAdded(_token);
     }
+
+    function initiateRemittance(
+    address _receiver, string memory _detailsURL,
+    address _token,
+    uint256 _amount
+) external returns(bytes32 remitanceIDbytes) {
+    require(_supportedToken[_token], "Token not supported");
+    uint256 fee = (_amount * FEE) / 100;
+    uint256 amountAfterFee = _amount - fee;
+
+    remitanceIDbytes = keccak256(abi.encodePacked(msg.sender, _receiver, block.timestamp));
+
+    require(IERC20(_token).transferFrom(msg.sender, address(this), _amount), "Transfer failed");
+    require(IERC20(_token).transfer(owner(), fee), "Fee transfer failed");
+
+    _remittances[remitanceIDbytes] = Remittance(
+        msg.sender,
+        _detailsURL,
+        _receiver,
+        _token,
+        amountAfterFee,
+        block.timestamp,
+        false
+    );
+
+    remitanceIDs[msg.sender].push(remitanceIDbytes);
+    emit RemittanceInitiated(remitanceIDbytes, msg.sender, _receiver, _token, amountAfterFee, block.timestamp);
+
+
+    remittanceLength++;
+}
+
+
+function claimRemittance(bytes32 _remittanceId) external {
+    Remittance storage remittance = _remittances[_remittanceId];
+    require(remittance.receiver == msg.sender, "Not the receiver");
+    require(!remittance.isCompleted, "Remittance already completed");
+
+    require(IERC20(remittance.token).transfer(msg.sender, remittance.amount), "Transfer failed");
+
+    remittance.isCompleted = true;
+    emit RemittanceCompleted(_remittanceId, msg.sender, remittance.amount, block.timestamp);
+}
+
 }

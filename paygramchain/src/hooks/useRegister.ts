@@ -1,5 +1,4 @@
 import PAYMENTABI from "@/contract/abi.json"
-import ERC20Abi from "@/contract/erc20.json"
 import { useCallback, useState } from "react";
 import { Contract } from "ethers";
 import { isSupportedNetwork } from "@/utils";

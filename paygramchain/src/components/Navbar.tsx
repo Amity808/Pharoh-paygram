@@ -1,9 +1,9 @@
 import React from 'react'
 import { ConnectButton } from "@/components/ConnectButton";
 import Link from 'next/link';
-type Props = {}
 
-const Navbar = (props: Props) => {
+
+const Navbar = () => {
     return (
        <div className=' flex justify-between flex-row p-[20px]'>
         <div>
